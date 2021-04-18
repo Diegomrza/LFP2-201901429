@@ -50,8 +50,10 @@ def menú_principal():
             print('Usted eligió la opción seis(Salir)')
             exit()
 
+#Fin métodos visuales -------------------------------------------------------------------
 
-#Métodos funcionales ********************************************************************
+
+#Métodos funcionales ////////////////////////////////////////////////////////////////////
 
 def cargar_archivo():
     global lista_de_gramaticas
@@ -90,11 +92,14 @@ def Mostrar_inf():
     global lista_de_gramaticas
     for x in lista_de_gramaticas:
         print('**********************')
-        print(x.nombre)
-        print(x.no_terminales)
-        print(x.terminales)
-        print(x.producciones)
-        print(x.terminal_inicial)
+        print('Nombre: ', x.nombre)
+        print('No Terminales: ', x.no_terminales)
+        print('Terminales: ', x.terminales)
+        print('Terminal inicial: ', x.terminal_inicial)
+        print('Tipo: ', x.tipo)
+        for x in x.producciones:
+            print(x)        
+        
         print('**********************')
 
 def generar_automata_pila():
@@ -106,5 +111,9 @@ def reporte_recorrido():
 def reporte_tabla():
     pass
 
-pantalla_principal()
+#Fin métodos funcionales ///////////////////////////////////////////////////////////////
+
+
+#Ejecución métodos
+#pantalla_principal()
 menú_principal()
