@@ -1,9 +1,10 @@
 import time, os
 from tkinter import Tk, filedialog
 from gramaticas import gramaticas
+from graphviz import Digraph
 
-lista_de_gramaticas = []
-
+lista_de_gramaticas = [] #Todas las gramáticas leídas
+gramaticas_libres_de_contexto = [] #Sólo las gramáticas libres de contexto
 #Métodos visuales -----------------------------------------------------------------------
 
 def pantalla_principal():
@@ -30,24 +31,37 @@ def menú_principal():
 
         if int(opcion) == 1:
             print()
-            print('Usted eligió la opción uno')
+            #print('Usted eligió la opción uno')
             cargar_archivo()
+            os.system('cls')
+
         elif int(opcion) == 2:
             print()
-            print('Usted eligió la opción dos')
+            #print('Usted eligió la opción dos')
+            os.system('cls')
             Mostrar_inf()
+
         elif int(opcion) == 3:
             print()
-            print('Usted eligió la opción tres')
+            #print('Usted eligió la opción tres')
+            os.system('cls')
+            generar_automata_pila()
+
         elif int(opcion) == 4:
             print()
-            print('Usted eligió la opción cuatro')
+            #print('Usted eligió la opción cuatro')
+            os.system('cls')
+            generar_automata_pila()
+
         elif int(opcion) == 5:
             print()
-            print('Usted eligió la opción cinco')
+            #print('Usted eligió la opción cinco')
+            os.system('cls')
+
         elif int(opcion) == 6:
             print()
-            print('Usted eligió la opción seis(Salir)')
+            #print('Usted eligió la opción seis(Salir)')
+            os.system('cls')
             exit()
 
 #Fin métodos visuales -------------------------------------------------------------------
@@ -90,20 +104,94 @@ def cargar_archivo():
 
 def Mostrar_inf():
     global lista_de_gramaticas
-    for x in lista_de_gramaticas:
-        print('**********************')
-        print('Nombre: ', x.nombre)
-        print('No Terminales: ', x.no_terminales)
-        print('Terminales: ', x.terminales)
-        print('Terminal inicial: ', x.terminal_inicial)
-        print('Tipo: ', x.tipo)
-        for x in x.producciones:
-            print(x)        
-        
-        print('**********************')
+    global gramaticas_libres_de_contexto
+    
+    for gramaticas in lista_de_gramaticas:
+        if gramaticas.tipo != 'Regular':
+            gramaticas_libres_de_contexto.append(gramaticas)
+
+    print('\nLista de gramáticas existentes: \n')
+
+    cont = 0
+    for gram in gramaticas_libres_de_contexto:
+        print('\t',cont,'. ', gram.nombre)
+        cont += 1
+
+    seleccion = int(input('\nSeleccione una gramática\n>>'))
+
+
+    for x in gramaticas_libres_de_contexto:
+        if x.nombre == gramaticas_libres_de_contexto[seleccion].nombre:
+            
+            print('\nNombre: ', x.nombre)
+            print('No Terminales= {',end='')
+            for a in x.no_terminales:
+                print(a,',', end='')
+            print('}')
+            print('Terminales= {',end='')
+            for b in x.terminales:
+                print(b,',',end='')
+            print('}')
+            print('No terminal inicial= ', x.terminal_inicial)
+            print('Tipo: ', x.tipo)
+
+            print('Producciones: ')
+            terminalActual = ''
+            for x in x.producciones:
+                if terminalActual != x[0]:
+                    print(x[0],'-> ', end='')
+                    lisita = x[1]        
+                    for y in lisita:
+                        for z in y:
+                            print(z,' ',end='')
+                    print()
+                else:
+                    print('| ', end='')
+                    lisita = x[1]        
+                    for y in lisita:
+                        for z in y:
+                            print(z,' ',end='')
+                    print()
+                terminalActual = x[0]
+                print()
 
 def generar_automata_pila():
-    pass
+    global gramaticas_libres_de_contexto
+
+    gram = None
+
+    indice = 0
+    for g in gramaticas_libres_de_contexto:
+        print(indice, '. ' ,g.nombre)
+        indice += 1
+
+    busqueda = int(input('Seleccione una gramática: '))
+
+    for x in gramaticas_libres_de_contexto:
+        if x.nombre == gramaticas_libres_de_contexto[busqueda].nombre:
+            gram = x
+        
+    labeel = ''
+    
+    for x in gram.producciones:
+        cad = ''
+        labeel += 'λ,' + x[0] + ';'
+        lisita = x[1]        
+        for y in lisita:
+            for z in y:
+                cad += z +' '
+        labeel+=cad +'\n'
+
+    g = Digraph ('G', format='pdf')
+    g.attr(rankdir='LR')
+    #g.edge_attr.update(arrowhead='vee')
+    g.edge('i','p', label='λ,λ;#')
+    g.edge('p','q',label='λ,λ;'+gram.terminal_inicial)
+    g.edge('q','q',label=labeel)
+    g.edge('q','f',label='λ,#;λ')
+
+
+    g.render(view=True)
 
 def reporte_recorrido():
     pass
@@ -114,6 +202,6 @@ def reporte_tabla():
 #Fin métodos funcionales ///////////////////////////////////////////////////////////////
 
 
-#Ejecución métodos
+    #Ejecución métodos
 #pantalla_principal()
 menú_principal()
