@@ -5,6 +5,8 @@ from graphviz import Digraph
 
 lista_de_gramaticas = [] #Todas las gramáticas leídas
 gramaticas_libres_de_contexto = [] #Sólo las gramáticas libres de contexto
+contador_imagenes = 0
+
 #Métodos visuales -----------------------------------------------------------------------
 
 def pantalla_principal():
@@ -33,25 +35,25 @@ def menú_principal():
             print()
             #print('Usted eligió la opción uno')
             cargar_archivo()
-            os.system('cls')
+            #os.system('cls')
 
         elif int(opcion) == 2:
             print()
             #print('Usted eligió la opción dos')
-            os.system('cls')
+            #os.system('cls')
             Mostrar_inf()
 
         elif int(opcion) == 3:
             print()
             #print('Usted eligió la opción tres')
-            os.system('cls')
+            #os.system('cls')
             generar_automata_pila()
 
         elif int(opcion) == 4:
             print()
             #print('Usted eligió la opción cuatro')
             os.system('cls')
-            generar_automata_pila()
+            #generar_automata_pila()
 
         elif int(opcion) == 5:
             print()
@@ -118,7 +120,7 @@ def Mostrar_inf():
         cont += 1
 
     seleccion = int(input('\nSeleccione una gramática\n>>'))
-
+    os.system('cls')
 
     for x in gramaticas_libres_de_contexto:
         if x.nombre == gramaticas_libres_de_contexto[seleccion].nombre:
@@ -156,23 +158,37 @@ def Mostrar_inf():
                 print()
 
 def generar_automata_pila():
-    global gramaticas_libres_de_contexto
+    global gramaticas_libres_de_contexto, contador_imagenes
+
+    cadena_html = '''<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reporte</title>
+        <style>
+            #imagen{ width: 720px;margin: 0 auto; }
+            #informacion{ margin: 0 auto;width: 720px;height: 300px; }
+        </style>
+        </head>
+            <body>
+                <div id="informacion">
+                    '''
+
 
     gram = None
-
     indice = 0
     for g in gramaticas_libres_de_contexto:
-        print(indice, '. ' ,g.nombre)
+        print('\t',indice, '. ' ,g.nombre)
         indice += 1
 
-    busqueda = int(input('Seleccione una gramática: '))
-
+    busqueda = int(input('\tSeleccione una gramática:\n\t>>'))
     for x in gramaticas_libres_de_contexto:
         if x.nombre == gramaticas_libres_de_contexto[busqueda].nombre:
             gram = x
         
     labeel = ''
-    
     for x in gram.producciones:
         cad = ''
         labeel += 'λ,' + x[0] + ';'
@@ -181,17 +197,34 @@ def generar_automata_pila():
             for z in y:
                 cad += z +' '
         labeel+=cad +'\n'
+    labeel +='\n'
+    for x in gram.terminales:
+        labeel += x+','+x +';'+'λ\n'
 
-    g = Digraph ('G', format='pdf')
+
+    g = Digraph ('G', format='png')
     g.attr(rankdir='LR')
-    #g.edge_attr.update(arrowhead='vee')
+    g.node('f',shape='doublecircle')
     g.edge('i','p', label='λ,λ;#')
     g.edge('p','q',label='λ,λ;'+gram.terminal_inicial)
     g.edge('q','q',label=labeel)
     g.edge('q','f',label='λ,#;λ')
+    g.render('grafo'+str(contador_imagenes))
+    contador_imagenes += 1
 
-
-    g.render(view=True)
+    cadena_html += '''
+                    <h1>Nombre: AP_Grm1</h1>
+                    <h2>Terminales = </h2>
+                    <h2>Alfabeto de pila = </h2>
+                    <h2>Estados = {i, p, q, f}</h2>
+                    <h2>Estado inicial = {i}</h2>
+                    <h2>Estado de aceptacion = {f}</h2>
+                </div>
+                <div id="imagen">
+                    <img src="grafo0.png">
+                </div>
+            </body>
+        </html>'''
 
 def reporte_recorrido():
     pass
@@ -202,6 +235,6 @@ def reporte_tabla():
 #Fin métodos funcionales ///////////////////////////////////////////////////////////////
 
 
-    #Ejecución métodos
+#Ejecución métodos
 #pantalla_principal()
 menú_principal()
