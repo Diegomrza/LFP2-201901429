@@ -6,6 +6,7 @@ class gramaticas:
         self.producciones = []  #producciones de la gramática
         self.terminal_inicial = None #terminal inicial
         self.tipo = 'Regular'        #tipo de gramática
+        self.idImagen = None
         
     def insertar_terminales(self, cadena_terminales):
         listaAux = cadena_terminales.split(',')

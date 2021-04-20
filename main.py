@@ -52,8 +52,8 @@ def menú_principal():
         elif int(opcion) == 4:
             print()
             #print('Usted eligió la opción cuatro')
-            os.system('cls')
-            #generar_automata_pila()
+            #os.system('cls')
+            reporte_recorrido()
 
         elif int(opcion) == 5:
             print()
@@ -77,12 +77,8 @@ def cargar_archivo():
     root = Tk()
     ruta = filedialog.askopenfilename(title="Seleccione un archivo", 
     filetypes = (("glc files","*.glc"),("all files","*.*")))
-
     abrir_archivo = open(ruta)
-    
     lista = abrir_archivo.readlines()
-    #contador = len(lista)
-
     gramaticaAux = []
     for x in lista:
         if x != '*\n' and x!= '*':
@@ -90,17 +86,13 @@ def cargar_archivo():
         else:
             spl = gramaticaAux[1].split(';')
             gram = gramaticas(gramaticaAux[0])
-
             gram.insertar_no_terminales(spl[0])
             gram.insertar_terminales(spl[1])
             gram.terminal_inicial = spl[2]
-
             for y in range(2,len(gramaticaAux)):
                 gram.insertar_producciones(gramaticaAux[y])
-
             lista_de_gramaticas.append(gram)
             gramaticaAux.clear()
-
     abrir_archivo.close()
     root.destroy()
 
@@ -113,18 +105,14 @@ def Mostrar_inf():
             gramaticas_libres_de_contexto.append(gramaticas)
 
     print('\nLista de gramáticas existentes: \n')
-
     cont = 0
     for gram in gramaticas_libres_de_contexto:
         print('\t',cont,'. ', gram.nombre)
         cont += 1
-
     seleccion = int(input('\nSeleccione una gramática\n>>'))
     os.system('cls')
-
     for x in gramaticas_libres_de_contexto:
-        if x.nombre == gramaticas_libres_de_contexto[seleccion].nombre:
-            
+        if x.nombre == gramaticas_libres_de_contexto[seleccion].nombre: 
             print('\nNombre: ', x.nombre)
             print('No Terminales= {',end='')
             for a in x.no_terminales:
@@ -136,7 +124,6 @@ def Mostrar_inf():
             print('}')
             print('No terminal inicial= ', x.terminal_inicial)
             print('Tipo: ', x.tipo)
-
             print('Producciones: ')
             terminalActual = ''
             for x in x.producciones:
@@ -159,7 +146,6 @@ def Mostrar_inf():
 
 def generar_automata_pila():
     global gramaticas_libres_de_contexto, contador_imagenes
-
     cadena_html = '''<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -175,8 +161,7 @@ def generar_automata_pila():
             <body>
                 <div id="informacion">
                     '''
-
-
+    #########################################
     gram = None
     indice = 0
     for g in gramaticas_libres_de_contexto:
@@ -201,7 +186,6 @@ def generar_automata_pila():
     for x in gram.terminales:
         labeel += x+','+x +';'+'λ\n'
 
-
     g = Digraph ('G', format='png')
     g.attr(rankdir='LR')
     g.node('f',shape='doublecircle')
@@ -209,25 +193,49 @@ def generar_automata_pila():
     g.edge('p','q',label='λ,λ;'+gram.terminal_inicial)
     g.edge('q','q',label=labeel)
     g.edge('q','f',label='λ,#;λ')
-    g.render('grafo'+str(contador_imagenes))
+    nombregrafo = 'grafo'+str(contador_imagenes)
+    g.render(nombregrafo)
     contador_imagenes += 1
+    ############################################
+    terminales_hmtl = ''
+    for h in gram.terminales:
+        terminales_hmtl += ' '+h+','
 
+    no_terminales_html = terminales_hmtl
+    for i in gram.no_terminales:
+        no_terminales_html += ' '+i + ','
+    
+    no_terminales_html+=' #'
+
+    cadena_html += '<h1>Nombre: AP_'+gram.nombre+'</h1>'
+    cadena_html += '<h2>Terminales ='+'{'+terminales_hmtl.rstrip(',')+' }'+'</h2>'
+    cadena_html += '<h2>Alfabeto de pila ='+'{'+no_terminales_html.rstrip(',')+' }'+'</h2>'
     cadena_html += '''
-                    <h1>Nombre: AP_Grm1</h1>
-                    <h2>Terminales = </h2>
-                    <h2>Alfabeto de pila = </h2>
-                    <h2>Estados = {i, p, q, f}</h2>
-                    <h2>Estado inicial = {i}</h2>
-                    <h2>Estado de aceptacion = {f}</h2>
+                    <h2>Estados = { i, p, q, f }</h2>
+                    <h2>Estado inicial = { i }</h2>
+                    <h2>Estado de aceptacion = { f }</h2>
                 </div>
-                <div id="imagen">
-                    <img src="grafo0.png">
+                <div id="imagen">'''
+    
+    cadena_html += '<img src="'+ nombregrafo +'.png'+'">'
+    
+    cadena_html+='''
                 </div>
             </body>
         </html>'''
 
+    hmtl = open('Automata pila.html','w')
+    hmtl.writelines(cadena_html)
+
+    gram.idImagen = nombregrafo+'.png'
+    gram.nombre = 'AP_'+gram.nombre
+
 def reporte_recorrido():
-    pass
+    for x in gramaticas_libres_de_contexto:
+        if x.idImagen != None:
+            print(x.nombre)
+            print(x.idImagen)
+    
 
 def reporte_tabla():
     pass
