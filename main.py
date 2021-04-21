@@ -2,9 +2,12 @@ import time, os
 from tkinter import Tk, filedialog
 from gramaticas import gramaticas
 from graphviz import Digraph
+from automatasDePila import AutomataPila
+import webbrowser as wb
 
 lista_de_gramaticas = [] #Todas las gramáticas leídas
 gramaticas_libres_de_contexto = [] #Sólo las gramáticas libres de contexto
+automatas_pila = [] #Contendrá todos los autómatas generados en la opción 3
 contador_imagenes = 0
 
 #Métodos visuales -----------------------------------------------------------------------
@@ -33,31 +36,27 @@ def menú_principal():
 
         if int(opcion) == 1:
             print()
-            #print('Usted eligió la opción uno')
             cargar_archivo()
-            #os.system('cls')
+            os.system('cls')
 
         elif int(opcion) == 2:
             print()
-            #print('Usted eligió la opción dos')
-            #os.system('cls')
+            os.system('cls')
             Mostrar_inf()
+            os.system('cls')
 
         elif int(opcion) == 3:
             print()
-            #print('Usted eligió la opción tres')
-            #os.system('cls')
+            os.system('cls')
             generar_automata_pila()
 
         elif int(opcion) == 4:
             print()
-            #print('Usted eligió la opción cuatro')
-            #os.system('cls')
+            os.system('cls')
             reporte_recorrido()
 
         elif int(opcion) == 5:
             print()
-            #print('Usted eligió la opción cinco')
             os.system('cls')
 
         elif int(opcion) == 6:
@@ -73,6 +72,7 @@ def menú_principal():
 
 def cargar_archivo():
     global lista_de_gramaticas
+    global gramaticas_libres_de_contexto
 
     root = Tk()
     ruta = filedialog.askopenfilename(title="Seleccione un archivo", 
@@ -96,15 +96,15 @@ def cargar_archivo():
     abrir_archivo.close()
     root.destroy()
 
+    for gramatica in lista_de_gramaticas:
+        if gramatica.tipo != 'Regular':
+            gramaticas_libres_de_contexto.append(gramatica)
+
 def Mostrar_inf():
     global lista_de_gramaticas
     global gramaticas_libres_de_contexto
     
-    for gramaticas in lista_de_gramaticas:
-        if gramaticas.tipo != 'Regular':
-            gramaticas_libres_de_contexto.append(gramaticas)
-
-    print('\nLista de gramáticas existentes: \n')
+    print('\n<!-- --> Lista de gramáticas existentes: <!-- -->\n')
     cont = 0
     for gram in gramaticas_libres_de_contexto:
         print('\t',cont,'. ', gram.nombre)
@@ -143,9 +143,10 @@ def Mostrar_inf():
                     print()
                 terminalActual = x[0]
                 print()
+    time.sleep(5)
 
 def generar_automata_pila():
-    global gramaticas_libres_de_contexto, contador_imagenes
+    global gramaticas_libres_de_contexto, contador_imagenes, automatas_pila
     cadena_html = '''<!DOCTYPE html>
         <html lang="en">
         <head>
@@ -169,6 +170,8 @@ def generar_automata_pila():
         indice += 1
 
     busqueda = int(input('\tSeleccione una gramática:\n\t>>'))
+    os.system('cls')
+
     for x in gramaticas_libres_de_contexto:
         if x.nombre == gramaticas_libres_de_contexto[busqueda].nombre:
             gram = x
@@ -186,6 +189,7 @@ def generar_automata_pila():
     for x in gram.terminales:
         labeel += x+','+x +';'+'λ\n'
 
+    #Grafo
     g = Digraph ('G', format='png')
     g.attr(rankdir='LR')
     g.node('f',shape='doublecircle')
@@ -193,9 +197,14 @@ def generar_automata_pila():
     g.edge('p','q',label='λ,λ;'+gram.terminal_inicial)
     g.edge('q','q',label=labeel)
     g.edge('q','f',label='λ,#;λ')
+
+
     nombregrafo = 'grafo'+str(contador_imagenes)
+
     g.render(nombregrafo)
+
     contador_imagenes += 1
+
     ############################################
     terminales_hmtl = ''
     for h in gram.terminales:
@@ -204,9 +213,7 @@ def generar_automata_pila():
     no_terminales_html = terminales_hmtl
     for i in gram.no_terminales:
         no_terminales_html += ' '+i + ','
-    
     no_terminales_html+=' #'
-
     cadena_html += '<h1>Nombre: AP_'+gram.nombre+'</h1>'
     cadena_html += '<h2>Terminales ='+'{'+terminales_hmtl.rstrip(',')+' }'+'</h2>'
     cadena_html += '<h2>Alfabeto de pila ='+'{'+no_terminales_html.rstrip(',')+' }'+'</h2>'
@@ -216,26 +223,124 @@ def generar_automata_pila():
                     <h2>Estado de aceptacion = { f }</h2>
                 </div>
                 <div id="imagen">'''
-    
     cadena_html += '<img src="'+ nombregrafo +'.png'+'">'
-    
     cadena_html+='''
                 </div>
             </body>
         </html>'''
 
-    hmtl = open('Automata pila.html','w')
-    hmtl.writelines(cadena_html)
+    html = open('Automata pila.html','w')
+    html.writelines(cadena_html)
+    html.close()
 
-    gram.idImagen = nombregrafo+'.png'
-    gram.nombre = 'AP_'+gram.nombre
+    wb.open_new(r'Automata pila.html')
+
+    nuevo = AutomataPila('AP_'+gram.nombre)
+    nuevo.id = nombregrafo+'.png'
+    nuevo.no_terminales = gram.no_terminales
+    nuevo.terminales = gram.terminales
+    nuevo.producciones = gram.producciones
+    nuevo.terminal_inicial = gram.terminal_inicial
+
+    automatas_pila.append(nuevo)
+
+    #gram.idImagen = nombregrafo+'.png'
+    #gram.nombre = 'AP_'+gram.nombre
 
 def reporte_recorrido():
-    for x in gramaticas_libres_de_contexto:
-        if x.idImagen != None:
-            print(x.nombre)
-            print(x.idImagen)
-    
+    global automatas_pila
+    gramaticaAux = None
+
+    contadorAutomatas = 0
+    for g in automatas_pila:
+        print('\t',contadorAutomatas,'. '+ g.nombre)
+        contadorAutomatas += 1
+    elegirAutomataDePila = int(input('Seleccione una gramática:\n>>'))
+    os.system('cls')
+
+    for x in automatas_pila:
+        if x.nombre == automatas_pila[elegirAutomataDePila].nombre:
+            gramaticaAux = x
+            
+    cadena = input('Ingrese una cadena para analizar: ')
+
+    print('Su cadena es esta: ', cadena)
+
+    tamaño_cadena = len(cadena)
+    i = 0
+    pila=[]
+    estado='i'
+    #no_terminal_inicial = gramaticaAux.terminal_inicial
+
+    alfabetoPila = gramaticaAux.no_terminales
+
+    for x in gramaticaAux.terminales:
+        alfabetoPila[x] = 'terminal'
+    alfabetoPila['#'] = 'terminal'
+
+    produccionsPila = {}
+    for y in gramaticaAux.producciones:
+        cadenita = ''
+        for z in y[1]:
+            for u in z:
+                cadenita += u+','
+
+        produccionsPila[cadenita.rstrip(',')] = y[0]
+
+    print(alfabetoPila)
+    print(produccionsPila)
+
+    while i < tamaño_cadena:
+        if estado == 'i':
+            pila.insert(0,'#')
+            estado = 'p'
+            print('Pila Actual: ', pila)
+        elif estado == 'p':
+            no_terminal_inicial0 = gramaticaAux.terminal_inicial
+            pila.insert(0,no_terminal_inicial0)
+            estado = 'q'
+            print('Pila Actual: ', pila)
+        elif estado == 'q':
+            inicio_pila = pila[0]
+            caracterActual = cadena[i]
+
+            if alfabetoPila[inicio_pila] == 'no terminal':
+                for x in produccionsPila:
+                    derecha = x.split(',')
+                    if (produccionsPila[x] == inicio_pila) and (len(derecha) != 1):
+                        if cadena[i] == derecha[0]:
+                            pila.remove(inicio_pila)
+                            for cad in reversed(derecha):
+                                if cad != '':
+                                    pila.insert(0,cad)
+                            print('Pila Actual: ',pila)
+                            break
+                        elif produccionsPila == inicio_pila:
+                            pila.remove(inicio_pila)
+                            for cad in reversed(derecha):
+                                if cad != '':
+                                    pila.insert(0,cad)
+                            print('Pila Actual: ',pila)
+                            break
+                    elif produccionsPila[x] == inicio_pila and len(derecha) == 1:
+                        pila.remove(inicio_pila)
+                        pila.insert(0,x)       
+                        break
+                
+            elif alfabetoPila[inicio_pila] == 'terminal' and inicio_pila != '#':
+                if caracterActual == inicio_pila:
+                    pila.remove(inicio_pila)
+                    i+=1
+                    print('Pila Actual: ',pila)
+                else:
+                    print('Error')
+                    break
+            elif alfabetoPila[inicio_pila] == 'terminal' and inicio_pila == '#':
+                print('Pila vacia')
+                break
+            
+    print(pila)
+
 
 def reporte_tabla():
     pass
