@@ -302,7 +302,7 @@ def reporte_recorrido():
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Tabla</title>
+        <title>Recorrido</title>
         </head>
             <body>'''
 
@@ -462,7 +462,10 @@ def reporte_recorrido():
                 pila.pop(0)
                 estado='f'
                 #print('Pila: ',pila)
-
+            elif caracterActual==cadena[tamaño_cadena-1] and inicio_pila == '#' and i != tamaño_cadena:
+                Rhmtl += '<div><p>Cadena rechazada</p></div>'
+                print('Cadena Rechazada')
+                break
         elif estado == 'f':
             #print('Pila: ',pila)
             print('Cadena Aceptada')
@@ -482,6 +485,9 @@ def reporte_recorrido():
                             </div>'''
             break
     
+    if estado != 'f':
+        Rhmtl += '<div><p>Cadena Rechazada</p></div>'
+
     print(pila)
     archivoHtml = open('reporteRecorrido.html', 'w')
 
@@ -535,7 +541,7 @@ def reporte_tabla():
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Recorrido</title>
+        <title>Tabla</title>
         </head>
             <body>
             <div>
@@ -556,6 +562,7 @@ def reporte_tabla():
 
             Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td></td><td>(i, $, $;p,#)</td></tr>'
             contadorTransiciones += 1
+            print('Pila: ',pila)
 
         elif estado == 'p':
             no_terminal_inicial0 = gramaticaAux.terminal_inicial
@@ -565,7 +572,7 @@ def reporte_tabla():
             Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td></td><td>(p, $, $;q,'+gramaticaAux.terminal_inicial+')</td></tr>'
             contadorTransiciones += 1
 
-            #print('Pila: ',pila)
+            print('Pila: ',pila)
         elif estado == 'q':
             inicio_pila = pila[0]
             if i < tamaño_cadena:
@@ -581,7 +588,7 @@ def reporte_tabla():
                                     pila.insert(0,cad)
                             Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td><td>(q, $, $;q,'+''.join(derecha)+')</td></tr>'
                             contadorTransiciones += 1
-                            #print('Pila: ',pila)
+                            print('Pila: ',pila)
                             break
                         elif produccionsPila == inicio_pila:
                             pila.remove(inicio_pila)
@@ -590,6 +597,7 @@ def reporte_tabla():
                                     pila.insert(0,cad)
                             Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td>'+'<td>(q, $, $;q,'+''.join(derecha)+')</td></tr>'
                             contadorTransiciones += 1
+                            print('Pila: ',pila)
                             break
                     elif produccionsPila[x] == inicio_pila and len(derecha) == 1:
                         pila.remove(inicio_pila)
@@ -597,7 +605,7 @@ def reporte_tabla():
                             pila.insert(0,x)
                         Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td><td>(q, $, $;q,'+x+')</td></tr>'
                         contadorTransiciones += 1
-                        #print('Pila: ',pila)
+                        print('Pila: ',pila)
                         break
             elif alfabetoPila[inicio_pila] == 'terminal' and inicio_pila != '#':
                 if caracterActual == inicio_pila:
@@ -605,25 +613,33 @@ def reporte_tabla():
                     i+=1
                     Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td><td>(q,'+caracterActual+','+caracterActual+';q, $)</td></tr>'
                     contadorTransiciones += 1
-                    #print('Pila: ',pila)
+                    print('Pila: ',pila)
                 else:
                     print('Error, cadena no aceptada')
                     break
-            elif caracterActual==cadena[tamaño_cadena-1] and inicio_pila == '#':
+            elif caracterActual==cadena[tamaño_cadena-1] and inicio_pila == '#' and i == tamaño_cadena:
                 pila.pop(0)
                 estado='f'
                 Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>$</td><td>(q, $,#;f, $)</td></tr>'
                 contadorTransiciones += 1
-                #print('Pila: ',pila)
+                print('Pila: ',pila)
+            elif caracterActual==cadena[tamaño_cadena-1] and inicio_pila == '#' and i != tamaño_cadena:
+                print('Cadena rechazada')
+                Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td><td>(q, $,#;f, $)</td></tr>'
+                contadorTransiciones += 1
+                break
         elif estado == 'f':
-            #print('Pila: ',pila)
+            print('Pila: ',pila)
             print('Cadena Aceptada')
             Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td></td><td>$</td><td>(q, $,#;f, $)</td></tr>'
             contadorTransiciones += 1
             break
     
     archivoHtml = open('TablaRecorrido.html', 'w')
-    Thtml +='</table></div></body></html>'
+    if estado == 'f':
+        Thtml +='</table><p>Cadena Aceptada</p></div></body></html>'
+    else:
+        Thtml +='</table><p>Cadena Rechazada</p></div></body></html>'
     archivoHtml.write(Thtml)
     archivoHtml.close()
 
