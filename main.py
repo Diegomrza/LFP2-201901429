@@ -266,14 +266,11 @@ def reporte_recorrido():
     cadena = input('Ingrese una cadena para analizar: ')
     #print('Su cadena es esta: ', cadena)
     
-
-
     tamaño_cadena = len(cadena)
     i = 0
     pila=[]
     estado='i'
     #no_terminal_inicial = gramaticaAux.terminal_inicial
-
 
     alfabetoPila = gramaticaAux.no_terminales
 
@@ -345,26 +342,18 @@ def reporte_recorrido():
                 </div>'''
 
         elif estado == 'q':
-
             inicio_pila = pila[0]
-
             if i < tamaño_cadena:
                 caracterActual = cadena[i]
-
             if alfabetoPila[inicio_pila] == 'no terminal':
-
                 for x in produccionsPila:
-
                     derecha = x.split(',')
                     if (produccionsPila[x] == inicio_pila) and (len(derecha) != 1):
-
                         if cadena[i] == derecha[0]:
                             pila.remove(inicio_pila)           
                             for cad in reversed(derecha):
                                 if cad != '':
                                     pila.insert(0,cad)
-                            #print('Pila: ',pila)
-
                             nombre = estado_q(gramaticaAux) ##
                             Rhmtl += '''<div>'''
                             Rhmtl += '<img src="'+nombre+'" alt="">'
@@ -385,7 +374,6 @@ def reporte_recorrido():
                                 if cad != '$' and cad != '':
                                     print('x')
                                     pila.insert(0,cad)
-
                             nombre = estado_q(gramaticaAux) ##
                             Rhmtl += '''<div>'''
                             Rhmtl += '<img src="'+nombre+'" alt="">'
