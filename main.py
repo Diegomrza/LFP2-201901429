@@ -59,6 +59,7 @@ def menú_principal():
         elif int(opcion) == 5:
             print()
             os.system('cls')
+            reporte_tabla()
 
         elif int(opcion) == 6:
             print()
@@ -301,7 +302,7 @@ def reporte_recorrido():
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Recorrido</title>
+        <title>Tabla</title>
         </head>
             <body>'''
 
@@ -357,7 +358,6 @@ def reporte_recorrido():
                     derecha = x.split(',')
                     if (produccionsPila[x] == inicio_pila) and (len(derecha) != 1):
 
-
                         if cadena[i] == derecha[0]:
                             pila.remove(inicio_pila)           
                             for cad in reversed(derecha):
@@ -373,7 +373,7 @@ def reporte_recorrido():
                             Rhmtl +='''</tr>
                             <tr>
                             <td>Entrada</td>'''
-                            Rhmtl += '<td></td>'
+                            Rhmtl += '<td>'+caracterActual+'</td>'
                             Rhmtl += '''
                             </tr>
                             </table>
@@ -382,7 +382,8 @@ def reporte_recorrido():
                         elif produccionsPila == inicio_pila:
                             pila.remove(inicio_pila)
                             for cad in reversed(derecha):
-                                if cad != '':
+                                if cad != '$' and cad != '':
+                                    print('x')
                                     pila.insert(0,cad)
 
                             nombre = estado_q(gramaticaAux) ##
@@ -393,7 +394,7 @@ def reporte_recorrido():
                             Rhmtl +='''</tr>
                             <tr>
                             <td>Entrada</td>'''
-                            Rhmtl += '<td></td>'
+                            Rhmtl += '<td>'+caracterActual+'</td>'
                             Rhmtl += '''
                             </tr>
                             </table>
@@ -403,7 +404,8 @@ def reporte_recorrido():
 
                     elif produccionsPila[x] == inicio_pila and len(derecha) == 1:
                         pila.remove(inicio_pila)
-                        pila.insert(0,x)  
+                        if x != '$':
+                            pila.insert(0,x)  
                         #print('Pila: ',pila)
                         nombre = estado_q(gramaticaAux) ##
                         Rhmtl += '''<div>'''
@@ -413,7 +415,7 @@ def reporte_recorrido():
                         Rhmtl +='''</tr>
                         <tr>
                         <td>Entrada</td>'''
-                        Rhmtl += '<td></td>'
+                        Rhmtl += '<td>'+caracterActual+'</td>'
                         Rhmtl += '''
                         </tr>
                         </table>
@@ -441,6 +443,19 @@ def reporte_recorrido():
                             </div>'''
                 else:
                     print('Error, cadena no aceptada')
+                    Rhmtl += '''<div>'''
+                    Rhmtl += '<img src="'+nombre+'" alt="">'
+                    Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+                    Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+                    Rhmtl +='''</tr>
+                            <tr>
+                            <td>Entrada</td>'''
+                    Rhmtl += '<td></td>'
+                    Rhmtl += '''
+                            </tr>
+                            </table>
+                            <p>Cadena Rechazada</p>
+                            </div>'''
                     break
 
             elif caracterActual==cadena[tamaño_cadena-1] and inicio_pila == '#':
@@ -463,9 +478,11 @@ def reporte_recorrido():
             Rhmtl += '''
                             </tr>
                             </table>
+                            <p>Cadena Aceptada</p>
                             </div>'''
             break
     
+    print(pila)
     archivoHtml = open('reporteRecorrido.html', 'w')
 
     
@@ -474,9 +491,143 @@ def reporte_recorrido():
     archivoHtml.write(Rhmtl)
 
     archivoHtml.close()
+
+    wb.open_new(r'reporteRecorrido.html')
             
 def reporte_tabla():
-    pass
+    global automatas_pila
+    gramaticaAux = None
+    contadorAutomatas = 0
+    for g in automatas_pila:
+        print('\t',contadorAutomatas,'. '+ g.nombre)
+        contadorAutomatas += 1
+    elegirAutomataDePila = int(input('Seleccione una gramática:\n>>'))
+    os.system('cls')
+
+    for x in automatas_pila:
+        if x.nombre == automatas_pila[elegirAutomataDePila].nombre:
+            gramaticaAux = x
+            
+    cadena = input('Ingrese una cadena para analizar: ')
+    
+    tamaño_cadena = len(cadena)
+    i = 0
+    pila=[]
+    estado='i'
+    alfabetoPila = gramaticaAux.no_terminales
+
+    for x in gramaticaAux.terminales:
+        alfabetoPila[x] = 'terminal'
+
+    alfabetoPila['#'] = 'terminal'
+
+    produccionsPila = {}
+    for y in gramaticaAux.producciones:
+        cadenita = ''
+        for z in y[1]:
+            for u in z:
+                cadenita += u+','
+        produccionsPila[cadenita.rstrip(',')] = y[0]
+
+    Thtml = '''<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Recorrido</title>
+        </head>
+            <body>
+            <div>
+            <table border='1'>
+            <tr>
+                <td>Iteración</td>
+                <td>Pila</td>
+                <td>Entrada</td>
+                <td>Transiciones</td>
+            </tr>'''
+
+    contadorTransiciones = 0
+
+    while i <= tamaño_cadena:
+        if estado == 'i':
+            pila.insert(0,'#')
+            estado = 'p'
+
+            Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td></td><td>(i, $, $;p,#)</td></tr>'
+            contadorTransiciones += 1
+
+        elif estado == 'p':
+            no_terminal_inicial0 = gramaticaAux.terminal_inicial
+            pila.insert(0,no_terminal_inicial0)
+            estado = 'q'
+
+            Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td></td><td>(p, $, $;q,'+gramaticaAux.terminal_inicial+')</td></tr>'
+            contadorTransiciones += 1
+
+            #print('Pila: ',pila)
+        elif estado == 'q':
+            inicio_pila = pila[0]
+            if i < tamaño_cadena:
+                caracterActual = cadena[i]
+            if alfabetoPila[inicio_pila] == 'no terminal':
+                for x in produccionsPila:
+                    derecha = x.split(',')
+                    if (produccionsPila[x] == inicio_pila) and (len(derecha) != 1):
+                        if cadena[i] == derecha[0]:
+                            pila.remove(inicio_pila)           
+                            for cad in reversed(derecha):
+                                if cad != '':
+                                    pila.insert(0,cad)
+                            Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td><td>(q, $, $;q,'+''.join(derecha)+')</td></tr>'
+                            contadorTransiciones += 1
+                            #print('Pila: ',pila)
+                            break
+                        elif produccionsPila == inicio_pila:
+                            pila.remove(inicio_pila)
+                            for cad in reversed(derecha):
+                                if cad != '$' and cad != '':
+                                    pila.insert(0,cad)
+                            Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td>'+'<td>(q, $, $;q,'+''.join(derecha)+')</td></tr>'
+                            contadorTransiciones += 1
+                            break
+                    elif produccionsPila[x] == inicio_pila and len(derecha) == 1:
+                        pila.remove(inicio_pila)
+                        if x != '$':
+                            pila.insert(0,x)
+                        Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td><td>(q, $, $;q,'+x+')</td></tr>'
+                        contadorTransiciones += 1
+                        #print('Pila: ',pila)
+                        break
+            elif alfabetoPila[inicio_pila] == 'terminal' and inicio_pila != '#':
+                if caracterActual == inicio_pila:
+                    pila.pop(0)
+                    i+=1
+                    Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>'+caracterActual+'</td><td>(q,'+caracterActual+','+caracterActual+';q, $)</td></tr>'
+                    contadorTransiciones += 1
+                    #print('Pila: ',pila)
+                else:
+                    print('Error, cadena no aceptada')
+                    break
+            elif caracterActual==cadena[tamaño_cadena-1] and inicio_pila == '#':
+                pila.pop(0)
+                estado='f'
+                Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td>'+''.join(pila)+'</td><td>$</td><td>(q, $,#;f, $)</td></tr>'
+                contadorTransiciones += 1
+                #print('Pila: ',pila)
+        elif estado == 'f':
+            #print('Pila: ',pila)
+            print('Cadena Aceptada')
+            Thtml += '<tr><td>'+str(contadorTransiciones)+'</td><td></td><td>$</td><td>(q, $,#;f, $)</td></tr>'
+            contadorTransiciones += 1
+            break
+    
+    archivoHtml = open('TablaRecorrido.html', 'w')
+    Thtml +='</table></div></body></html>'
+    archivoHtml.write(Thtml)
+    archivoHtml.close()
+
+    wb.open_new(r'TablaRecorrido.html')
 
 
 #Estados
@@ -618,5 +769,5 @@ def estado_f(gram):
 #Fin métodos funcionales ///////////////////////////////////////////////////////////////
 
 #Ejecución métodos
-#pantalla_principal()
+pantalla_principal()
 menú_principal()
