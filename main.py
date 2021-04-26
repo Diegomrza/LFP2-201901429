@@ -9,6 +9,7 @@ lista_de_gramaticas = [] #Todas las gramáticas leídas
 gramaticas_libres_de_contexto = [] #Sólo las gramáticas libres de contexto
 automatas_pila = [] #Contendrá todos los autómatas generados en la opción 3
 contador_imagenes = 0
+contadorReporteRecorrido = 0
 
 #Métodos visuales -----------------------------------------------------------------------
 
@@ -250,7 +251,6 @@ def generar_automata_pila():
 def reporte_recorrido():
     global automatas_pila
     gramaticaAux = None
-
     contadorAutomatas = 0
     for g in automatas_pila:
         print('\t',contadorAutomatas,'. '+ g.nombre)
@@ -263,8 +263,9 @@ def reporte_recorrido():
             gramaticaAux = x
             
     cadena = input('Ingrese una cadena para analizar: ')
+    #print('Su cadena es esta: ', cadena)
+    
 
-    print('Su cadena es esta: ', cadena)
 
     tamaño_cadena = len(cadena)
     i = 0
@@ -272,11 +273,14 @@ def reporte_recorrido():
     estado='i'
     #no_terminal_inicial = gramaticaAux.terminal_inicial
 
+
     alfabetoPila = gramaticaAux.no_terminales
 
     for x in gramaticaAux.terminales:
         alfabetoPila[x] = 'terminal'
+
     alfabetoPila['#'] = 'terminal'
+
 
     produccionsPila = {}
     for y in gramaticaAux.producciones:
@@ -284,69 +288,334 @@ def reporte_recorrido():
         for z in y[1]:
             for u in z:
                 cadenita += u+','
-
         produccionsPila[cadenita.rstrip(',')] = y[0]
+
+    
 
     print(alfabetoPila)
     print(produccionsPila)
 
-    while i < tamaño_cadena:
+    Rhmtl = '''<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Recorrido</title>
+        </head>
+            <body>'''
+
+    while i <= tamaño_cadena:
         if estado == 'i':
             pila.insert(0,'#')
             estado = 'p'
-            print('Pila Actual: ', pila)
+            #print('Pila: ',pila)
+            nombre = estado_i(gramaticaAux) ##
+            Rhmtl += '''<div>'''
+            Rhmtl += '<img src="'+nombre+'" alt="">'
+            Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+            Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+            Rhmtl +='''</tr>
+                <tr>
+                <td>Entrada</td>'''
+            Rhmtl += '<td></td>'
+            Rhmtl += '''
+                </tr>
+                </table>
+                </div>'''
+
         elif estado == 'p':
             no_terminal_inicial0 = gramaticaAux.terminal_inicial
             pila.insert(0,no_terminal_inicial0)
             estado = 'q'
-            print('Pila Actual: ', pila)
+            #print('Pila: ',pila)
+            nombre = estado_p(gramaticaAux) ##
+            Rhmtl += '''<div>'''
+            Rhmtl += '<img src="'+nombre+'" alt="">'
+            Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+            Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+            Rhmtl +='''</tr>
+                <tr>
+                <td>Entrada</td>'''
+            Rhmtl += '<td></td>'
+            Rhmtl += '''
+                </tr>
+                </table>
+                </div>'''
+
         elif estado == 'q':
+
             inicio_pila = pila[0]
-            caracterActual = cadena[i]
+
+            if i < tamaño_cadena:
+                caracterActual = cadena[i]
 
             if alfabetoPila[inicio_pila] == 'no terminal':
+
                 for x in produccionsPila:
+
                     derecha = x.split(',')
                     if (produccionsPila[x] == inicio_pila) and (len(derecha) != 1):
+
+
                         if cadena[i] == derecha[0]:
-                            pila.remove(inicio_pila)
+                            pila.remove(inicio_pila)           
                             for cad in reversed(derecha):
                                 if cad != '':
                                     pila.insert(0,cad)
-                            print('Pila Actual: ',pila)
+                            #print('Pila: ',pila)
+
+                            nombre = estado_q(gramaticaAux) ##
+                            Rhmtl += '''<div>'''
+                            Rhmtl += '<img src="'+nombre+'" alt="">'
+                            Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+                            Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+                            Rhmtl +='''</tr>
+                            <tr>
+                            <td>Entrada</td>'''
+                            Rhmtl += '<td></td>'
+                            Rhmtl += '''
+                            </tr>
+                            </table>
+                            </div>'''
                             break
                         elif produccionsPila == inicio_pila:
                             pila.remove(inicio_pila)
                             for cad in reversed(derecha):
                                 if cad != '':
                                     pila.insert(0,cad)
-                            print('Pila Actual: ',pila)
+
+                            nombre = estado_q(gramaticaAux) ##
+                            Rhmtl += '''<div>'''
+                            Rhmtl += '<img src="'+nombre+'" alt="">'
+                            Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+                            Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+                            Rhmtl +='''</tr>
+                            <tr>
+                            <td>Entrada</td>'''
+                            Rhmtl += '<td></td>'
+                            Rhmtl += '''
+                            </tr>
+                            </table>
+                            </div>'''
+                            #print('Pila: ',pila)
                             break
+
                     elif produccionsPila[x] == inicio_pila and len(derecha) == 1:
                         pila.remove(inicio_pila)
-                        pila.insert(0,x)       
+                        pila.insert(0,x)  
+                        #print('Pila: ',pila)
+                        nombre = estado_q(gramaticaAux) ##
+                        Rhmtl += '''<div>'''
+                        Rhmtl += '<img src="'+nombre+'" alt="">'
+                        Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+                        Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+                        Rhmtl +='''</tr>
+                        <tr>
+                        <td>Entrada</td>'''
+                        Rhmtl += '<td></td>'
+                        Rhmtl += '''
+                        </tr>
+                        </table>
+                        </div>'''
                         break
                 
             elif alfabetoPila[inicio_pila] == 'terminal' and inicio_pila != '#':
+
                 if caracterActual == inicio_pila:
-                    pila.remove(inicio_pila)
+                    pila.pop(0)
                     i+=1
-                    print('Pila Actual: ',pila)
+                    #print('Pila: ',pila)
+                    nombre = estado_q(gramaticaAux) ##
+                    Rhmtl += '''<div>'''
+                    Rhmtl += '<img src="'+nombre+'" alt="">'
+                    Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+                    Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+                    Rhmtl +='''</tr>
+                            <tr>
+                            <td>Entrada</td>'''
+                    Rhmtl += '<td></td>'
+                    Rhmtl += '''
+                            </tr>
+                            </table>
+                            </div>'''
                 else:
-                    print('Error')
+                    print('Error, cadena no aceptada')
                     break
-            elif alfabetoPila[inicio_pila] == 'terminal' and inicio_pila == '#':
-                print('Pila vacia')
-                break
+
+            elif caracterActual==cadena[tamaño_cadena-1] and inicio_pila == '#':
+                pila.pop(0)
+                estado='f'
+                #print('Pila: ',pila)
+
+        elif estado == 'f':
+            #print('Pila: ',pila)
+            print('Cadena Aceptada')
+            nombre = estado_f(gramaticaAux) ##
+            Rhmtl += '''<div>'''
+            Rhmtl += '<img src="'+nombre+'" alt="">'
+            Rhmtl += '''<table border='1'><tr><td>Pila</td>'''
+            Rhmtl += '<td>'+ ''.join(pila) +'</td>'
+            Rhmtl +='''</tr>
+                            <tr>
+                            <td>Entrada</td>'''
+            Rhmtl += '<td></td>'
+            Rhmtl += '''
+                            </tr>
+                            </table>
+                            </div>'''
+            break
+    
+    archivoHtml = open('reporteRecorrido.html', 'w')
+
+    
+    Rhmtl+='</body></html>'
+
+    archivoHtml.write(Rhmtl)
+
+    archivoHtml.close()
             
-    print(pila)
-
-
 def reporte_tabla():
     pass
 
-#Fin métodos funcionales ///////////////////////////////////////////////////////////////
 
+#Estados
+
+def estado_i(gram):
+    global contadorReporteRecorrido
+    labeel = ''
+    for x in gram.producciones:
+        cad = ''
+        labeel += 'λ,' + x[0] + ';'
+        lisita = x[1]        
+        for y in lisita:
+            for z in y:
+                cad += z +' '
+        labeel+=cad +'\n'
+    labeel +='\n'
+    for x in gram.terminales:
+        labeel += x+','+x +';'+'λ\n'
+
+    g =Digraph('G', format='png')
+    g.attr(label='Imagen original')
+    g.attr(rankdir='LR')
+
+    g.node('i', color='yellow')
+    g.node('p')
+    g.node('q')
+    g.node('f', shape='doublecircle')
+
+    g.edge('i','p', label='λ,λ;#', fontcolor='red')
+    g.edge('p','q',label='λ,λ;'+gram.terminal_inicial)
+    g.edge('q','q',label=labeel)
+    g.edge('q','f',label='λ,#;λ')
+
+    nombre = 'rep'+str(contadorReporteRecorrido)
+    g.render(nombre)
+    contadorReporteRecorrido += 1
+
+    return nombre+'.png'
+
+def estado_p(gram):
+    global contadorReporteRecorrido
+    labeel = ''
+    for x in gram.producciones:
+        cad = ''
+        labeel += 'λ,' + x[0] + ';'
+        lisita = x[1]        
+        for y in lisita:
+            for z in y:
+                cad += z +' '
+        labeel+=cad +'\n'
+    labeel +='\n'
+    for x in gram.terminales:
+        labeel += x+','+x +';'+'λ\n'
+
+    g =Digraph('G', format='png')
+    g.attr(rankdir='LR')
+
+    g.node('i')
+    g.node('p',color='yellow')
+    g.node('q')
+    g.node('f', shape='doublecircle')
+
+    g.edge('i','p', label='λ,λ;#')
+    g.edge('p','q', label='λ,λ;'+gram.terminal_inicial, fontcolor='red')
+    g.edge('q','q', label=labeel)
+    g.edge('q','f', label='λ,#;λ')
+    nombre = 'rep'+str(contadorReporteRecorrido)
+    g.render(nombre)
+    contadorReporteRecorrido += 1
+    return nombre+'.png'
+
+def estado_q(gram):
+    global contadorReporteRecorrido
+    labeel = ''
+    for x in gram.producciones:
+        cad = ''
+        labeel += 'λ,' + x[0] + ';'
+        lisita = x[1]        
+        for y in lisita:
+            for z in y:
+                cad += z +' '
+        labeel+=cad +'\n'
+    labeel +='\n'
+    for x in gram.terminales:
+        labeel += x+','+x +';'+'λ\n'
+
+    g =Digraph('G', format='png')
+    g.attr(rankdir='LR')
+
+    g.node('i')
+    g.node('p')
+    g.node('q', color='yellow')
+    g.node('f', shape='doublecircle')
+
+    g.edge('i','p', label='λ,λ;#')
+    g.edge('p','q', label='λ,λ;'+gram.terminal_inicial)
+    g.edge('q','q', label=labeel, fontcolor='red')
+    g.edge('q','f', label='λ,#;λ')
+    nombre = 'rep'+str(contadorReporteRecorrido)
+    g.render(nombre)
+    contadorReporteRecorrido += 1
+
+    return nombre+'.png'
+
+def estado_f(gram):
+    global contadorReporteRecorrido
+    labeel = ''
+    for x in gram.producciones:
+        cad = ''
+        labeel += 'λ,' + x[0] + ';'
+        lisita = x[1]        
+        for y in lisita:
+            for z in y:
+                cad += z +' '
+        labeel+=cad +'\n'
+    labeel +='\n'
+    for x in gram.terminales:
+        labeel += x+','+x +';'+'λ\n'
+
+    g =Digraph('G', format='png')
+    g.attr(rankdir='LR')
+
+    g.node('i')
+    g.node('p')
+    g.node('q')
+    g.node('f', shape='doublecircle',color='yellow')
+
+    g.edge('i','p', label='λ,λ;#')
+    g.edge('p','q', label='λ,λ;'+gram.terminal_inicial)
+    g.edge('q','q', label=labeel)
+    g.edge('q','f',label='λ,#;λ', fontcolor='red')
+
+    nombre = 'rep'+str(contadorReporteRecorrido)
+    g.render(nombre)
+    contadorReporteRecorrido += 1
+    return nombre+'.png'
+
+
+#Fin métodos funcionales ///////////////////////////////////////////////////////////////
 
 #Ejecución métodos
 #pantalla_principal()
